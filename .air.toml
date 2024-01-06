@@ -1,0 +1,21 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  args_bin = []
+  bin = "./tmp/main -f ./samples/petstore.json"
+  cmd = "go build -o ./tmp/main ."
+  include_ext = ["go", "json"]
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+[misc]
+  clean_on_exit = true
+
+[screen]
+  clear_on_rebuild = true

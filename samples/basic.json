@@ -1,0 +1,127 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "My API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/monitors": {
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "type": "integer"
+        },
+        {
+          "in": "query",
+          "name": "per_page",
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "whatever",
+            "examples": {
+              "application/json": {
+                "items": [
+                  {
+                    "id": "123456"
+                  }
+                ]
+              }
+            },
+            "schema": {
+              "example": {
+                "items": [
+                  {
+                    "id": "123456"
+                  }
+                ]
+              },
+              "items": {
+                "properties": {
+                  "id": {
+                    "example": "123456",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "description": "List all monitors",
+        "operationId": "monitorApiList",
+        "summary": "Monitor API list"
+      }
+    },
+    "/users": {
+      "get": {
+        "description": "Returns all users from the system that the user has access to",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of users."
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "interval": {
+                  "example": "5m",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Test ",
+                  "type": "string"
+                },
+                "rule": {
+                  "example": "status == 200",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "http://example.com",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "http",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "description": "Monitor API create",
+        "operationId": "monitorApiCreate",
+        "summary": "Monitor API create"
+      }
+    }
+  },
+  "definitions": {}
+}

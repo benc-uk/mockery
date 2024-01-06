@@ -1,0 +1,743 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "NanoMon API Service",
+    "version": "1.0.0"
+  },
+  "basePath": "/api",
+  "paths": {
+    "/monitors": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "MONITORS",
+            "schema": {
+              "example": [
+                {
+                  "enabled": true,
+                  "id": "1234",
+                  "interval": "45s",
+                  "name": "Example Monitor 1",
+                  "properties": {},
+                  "rule": "status == 200 && respTime < 1200",
+                  "target": "http://example.net",
+                  "type": "http",
+                  "updated": "2024-01-06T06:21:01.879Z"
+                },
+                {
+                  "enabled": true,
+                  "group": "database",
+                  "id": "5678",
+                  "interval": "2m",
+                  "name": "Database Monitor",
+                  "properties": {
+                    "timeout": "500ms"
+                  },
+                  "rule": "respTime < 100",
+                  "target": "localhost:27017",
+                  "type": "tcp",
+                  "updated": "2024-01-06T06:20:53.06Z"
+                }
+              ],
+              "items": {
+                "properties": {
+                  "enabled": {
+                    "example": true,
+                    "type": "boolean"
+                  },
+                  "group": {
+                    "example": "database",
+                    "type": "string"
+                  },
+                  "id": {
+                    "example": "1234",
+                    "type": "string"
+                  },
+                  "interval": {
+                    "example": "45s",
+                    "type": "string"
+                  },
+                  "name": {
+                    "example": "Example Monitor 1",
+                    "type": "string"
+                  },
+                  "properties": {
+                    "properties": {
+                      "timeout": {
+                        "example": "500ms",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "rule": {
+                    "example": "status == 200 && respTime < 1200",
+                    "type": "string"
+                  },
+                  "target": {
+                    "example": "http://example.net",
+                    "type": "string"
+                  },
+                  "type": {
+                    "example": "http",
+                    "type": "string"
+                  },
+                  "updated": {
+                    "example": "2024-01-06T06:21:01.879Z",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "description": "List all monitors",
+        "operationId": "monitorApiList",
+        "summary": "Monitor API list"
+      },
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "interval": {
+                  "example": "5m",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Test ",
+                  "type": "string"
+                },
+                "rule": {
+                  "example": "status == 200",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "http://example.com",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "http",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CREATE",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "id": {
+                  "example": "9999",
+                  "type": "string"
+                },
+                "interval": {
+                  "example": "30s",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Example Ping Monitor",
+                  "type": "string"
+                },
+                "properties": {
+                  "properties": {
+                    "timeout": {
+                      "example": "500ms",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "rule": {
+                  "example": "packetLoss == 0 && avgRtt < 50",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "localhost",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "ping",
+                  "type": "string"
+                },
+                "updated": {
+                  "example": "2024-01-06T06:25:01.259652779Z",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "CLIENT ERROR",
+            "schema": {
+              "properties": {
+                "detail": {
+                  "example": "Something bad happened",
+                  "type": "string"
+                },
+                "instance": {
+                  "example": "monitors",
+                  "type": "string"
+                },
+                "status": {
+                  "example": 400,
+                  "type": "number"
+                },
+                "title": {
+                  "example": "main.API.createMonitor",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "/api/monitors",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Monitor API create",
+        "operationId": "monitorApiCreate",
+        "summary": "Monitor API create"
+      }
+    },
+    "/monitors/{monId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "monId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "delete": {
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "DELETED"
+          }
+        },
+        "description": "Monitor API delete",
+        "operationId": "monitorApiDelete",
+        "summary": "Monitor API delete"
+      },
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "MONITOR",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "id": {
+                  "example": "1234",
+                  "type": "string"
+                },
+                "interval": {
+                  "example": "30s",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Example Monitor 1",
+                  "type": "string"
+                },
+                "properties": {
+                  "properties": {},
+                  "type": "object"
+                },
+                "rule": {
+                  "example": "status == 200 && respTime < 1200",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "http://example.net",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "http",
+                  "type": "string"
+                },
+                "updated": {
+                  "example": "2024-01-06T06:18:20.456Z",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "404": {
+            "description": "MISSING",
+            "schema": {
+              "properties": {
+                "detail": {
+                  "example": "mongo: no documents in result",
+                  "type": "string"
+                },
+                "instance": {
+                  "example": "monitors",
+                  "type": "string"
+                },
+                "status": {
+                  "example": 404,
+                  "type": "number"
+                },
+                "title": {
+                  "example": "main.API.getMonitor",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "/api/monitors/6598f129b44a6d5be946ffae",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Monitor API get",
+        "operationId": "monitorApiGet",
+        "summary": "Monitor API get"
+      },
+      "put": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": false,
+                  "type": "boolean"
+                },
+                "interval": {
+                  "example": "5m",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Test ",
+                  "type": "string"
+                },
+                "rule": {
+                  "example": "status == 200",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "http://example.com",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "http",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "UPDATED",
+            "schema": {
+              "properties": {
+                "enabled": {
+                  "example": true,
+                  "type": "boolean"
+                },
+                "id": {
+                  "example": "1234",
+                  "type": "string"
+                },
+                "interval": {
+                  "example": "30s",
+                  "type": "string"
+                },
+                "name": {
+                  "example": "Example Monitor 1",
+                  "type": "string"
+                },
+                "properties": {
+                  "properties": {},
+                  "type": "object"
+                },
+                "rule": {
+                  "example": "status == 200 && respTime < 1200",
+                  "type": "string"
+                },
+                "target": {
+                  "example": "http://example.net",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "http",
+                  "type": "string"
+                },
+                "updated": {
+                  "example": "2024-01-06T06:18:20.456Z",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "CLIENT ERROR",
+            "schema": {
+              "properties": {
+                "detail": {
+                  "example": "Something bad happened",
+                  "type": "string"
+                },
+                "instance": {
+                  "example": "monitors",
+                  "type": "string"
+                },
+                "status": {
+                  "example": 400,
+                  "type": "number"
+                },
+                "title": {
+                  "example": "main.API.createMonitor",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "/api/monitors",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Monitor API update",
+        "operationId": "monitorApiUpdate",
+        "summary": "Monitor API update"
+      }
+    },
+    "/monitors/{monId}/results": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "monId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "max",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MONITOR RESULTS LIST",
+            "schema": {
+              "example": [
+                {
+                  "date": "2024-01-06T06:21:57.11Z",
+                  "message": "",
+                  "monitor_id": "1234",
+                  "monitor_name": "Example Monitor 1",
+                  "monitor_target": "http://example.net",
+                  "outputs": {
+                    "body": "*** Removed ***",
+                    "bodyLen": 1256,
+                    "regexMatch": "",
+                    "respTime": 95,
+                    "status": 200
+                  },
+                  "status": 0,
+                  "value": 95
+                },
+                {
+                  "date": "2024-01-06T06:21:11.816Z",
+                  "message": "",
+                  "monitor_id": "1234",
+                  "monitor_name": "Example Monitor 1",
+                  "monitor_target": "http://example.net",
+                  "outputs": {
+                    "body": "*** Removed ***",
+                    "bodyLen": 1256,
+                    "regexMatch": "",
+                    "respTime": 280,
+                    "status": 200
+                  },
+                  "status": 0,
+                  "value": 280
+                }
+              ],
+              "items": {
+                "properties": {
+                  "date": {
+                    "example": "2024-01-06T06:21:57.11Z",
+                    "type": "string"
+                  },
+                  "message": {
+                    "example": "",
+                    "type": "string"
+                  },
+                  "monitor_id": {
+                    "example": "1234",
+                    "type": "string"
+                  },
+                  "monitor_name": {
+                    "example": "Example Monitor 1",
+                    "type": "string"
+                  },
+                  "monitor_target": {
+                    "example": "http://example.net",
+                    "type": "string"
+                  },
+                  "outputs": {
+                    "properties": {
+                      "body": {
+                        "example": "*** Removed ***",
+                        "type": "string"
+                      },
+                      "bodyLen": {
+                        "example": 1256,
+                        "type": "number"
+                      },
+                      "regexMatch": {
+                        "example": "",
+                        "type": "string"
+                      },
+                      "respTime": {
+                        "example": 95,
+                        "type": "number"
+                      },
+                      "status": {
+                        "example": 200,
+                        "type": "number"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "status": {
+                    "example": 0,
+                    "type": "number"
+                  },
+                  "value": {
+                    "example": 95,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "404": {
+            "description": "MISSING",
+            "schema": {
+              "properties": {
+                "detail": {
+                  "example": "mongo: no documents in result",
+                  "type": "string"
+                },
+                "instance": {
+                  "example": "monitors",
+                  "type": "string"
+                },
+                "status": {
+                  "example": 404,
+                  "type": "number"
+                },
+                "title": {
+                  "example": "main.API.getMonitor",
+                  "type": "string"
+                },
+                "type": {
+                  "example": "/api/monitors/6598f129b44a6d5be946ffae",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          }
+        },
+        "description": "Monitor API get results",
+        "operationId": "monitorApiGetResults",
+        "summary": "Monitor API get results"
+      }
+    },
+    "/results": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "max",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RESULTS LIST",
+            "schema": {
+              "example": [
+                {
+                  "date": "2024-01-06T06:21:57.11Z",
+                  "message": "I like goats",
+                  "monitor_id": "1234",
+                  "monitor_name": "Example Monitor 1",
+                  "monitor_target": "http://example.net",
+                  "outputs": {
+                    "body": "*** Removed ***",
+                    "bodyLen": 1256,
+                    "regexMatch": "",
+                    "respTime": 95,
+                    "status": 200
+                  },
+                  "status": 0,
+                  "value": 95
+                },
+                {
+                  "date": "2024-01-06T06:21:13.825Z",
+                  "message": "This is sample data",
+                  "monitor_id": "5678",
+                  "monitor_name": "Database Monitor",
+                  "monitor_target": "localhost:27017",
+                  "outputs": {
+                    "ipAddress": "127.0.0.1",
+                    "respTime": 0
+                  },
+                  "status": 0,
+                  "value": 0
+                },
+                {
+                  "date": "2024-01-06T06:21:11.816Z",
+                  "message": "Hello",
+                  "monitor_id": "1234",
+                  "monitor_name": "Example Monitor 1",
+                  "monitor_target": "http://example.net",
+                  "outputs": {
+                    "body": "*** Removed ***",
+                    "bodyLen": 1256,
+                    "regexMatch": "",
+                    "respTime": 280,
+                    "status": 200
+                  },
+                  "status": 0,
+                  "value": 280
+                }
+              ],
+              "items": {
+                "properties": {
+                  "date": {
+                    "example": "2024-01-06T06:21:57.11Z",
+                    "type": "string"
+                  },
+                  "message": {
+                    "example": "I like goats",
+                    "type": "string"
+                  },
+                  "monitor_id": {
+                    "example": "1234",
+                    "type": "string"
+                  },
+                  "monitor_name": {
+                    "example": "Example Monitor 1",
+                    "type": "string"
+                  },
+                  "monitor_target": {
+                    "example": "http://example.net",
+                    "type": "string"
+                  },
+                  "outputs": {
+                    "properties": {
+                      "body": {
+                        "example": "*** Removed ***",
+                        "type": "string"
+                      },
+                      "bodyLen": {
+                        "example": 1256,
+                        "type": "number"
+                      },
+                      "ipAddress": {
+                        "example": "127.0.0.1",
+                        "type": "string"
+                      },
+                      "regexMatch": {
+                        "example": "",
+                        "type": "string"
+                      },
+                      "respTime": {
+                        "example": 95,
+                        "type": "number"
+                      },
+                      "status": {
+                        "example": 200,
+                        "type": "number"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "status": {
+                    "example": 0,
+                    "type": "number"
+                  },
+                  "value": {
+                    "example": 95,
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          }
+        },
+        "description": "Results API get results",
+        "operationId": "resultsApiGetResults",
+        "summary": "Results API get results"
+      }
+    }
+  },
+  "tags": []
+}

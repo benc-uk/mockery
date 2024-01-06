@@ -1,0 +1,40 @@
+GET http://localhost:8000/api/monitors
+
+###
+
+GET http://localhost:8000/api/monitors/1234
+#x-mock-response-code: 404
+
+###
+
+GET http://localhost:8000/api/monitors/001/results?max=555
+
+###
+
+POST http://localhost:8000/api/monitors
+Content-Type: application/json
+#x-mock-response-code: 400
+
+{
+}
+
+###
+
+PUT http://localhost:8000/api/monitors/1234
+Content-Type: application/json
+
+{
+}
+
+###
+
+GET http://localhost:8000/api/results
+
+###
+
+DELETE http://localhost:8000/api/monitors/1234
+x-mock-response-code: 200
+
+###
+
+POST http://localhost:8000/v2/pet
