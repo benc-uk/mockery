@@ -143,7 +143,7 @@ func main() {
 		}
 	}
 
-	logger.Warn("Server started", slog.Any("port", config.port))
+	logger.Warn("Mockery server started", slog.Any("port", config.port))
 
 	// Create custom server
 	srv := &http.Server{
