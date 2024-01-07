@@ -50,9 +50,7 @@ push: check-vars ## 📤 Push container image to registry
 
 build: ## 🔨 Run a local build without a container
 	@figlet $@ || true
-	@echo "Not implemented yet!"
 	go build -o bin/mockery $(SRC_DIR)/...
-	#cd $(SRC_DIR); npm run build
 
 run: ## 🏃 Run application, used for local development
 	@figlet $@ || true

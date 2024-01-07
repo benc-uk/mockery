@@ -6,9 +6,24 @@ It can be use to act as mock or placeholder server for testing, mocking, or othe
 
 It goes beyond providing simple empty HTTP responses, and will use any examples discovered in the OAS to provide a payload repsonse back, obviously these responses are static, however they do increase the usefulness of the API tremendously.
 
-![screen shot](https://private-user-images.githubusercontent.com/14982936/294769200-31b0dca6-f464-4acb-8b4b-2b6782f46ccb.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDQ2NDMwNTEsIm5iZiI6MTcwNDY0Mjc1MSwicGF0aCI6Ii8xNDk4MjkzNi8yOTQ3NjkyMDAtMzFiMGRjYTYtZjQ2NC00YWNiLThiNGItMmI2NzgyZjQ2Y2NiLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMDclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTA3VDE1NTIzMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTRmMThiMWRiYjU3MDRiNWMxNDE1N2NkNDA4YjA5OWYxYjhiYmFkOTdlNDZmYjI1N2M1OTk1YjAyMmMxYzVjMTImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.v25mm-Pxw-wNuH6xzg6pYvL5Nr0qHunzadPtEXew1Gw)
+![screen shot](./etc/screenshot.png)
 
-# Install
+# Install & Run
+
+## Download Binary
+
+
+## Run From Container
+
+A container image is available on GitHub. You will need to mount ot inject the directory where your OAS spec file is located and supply that as an arguement when running, for example:
+
+```bash
+docker run -v ./some_directory:/specs \
+ -p 8000:8000 \
+ ghcr.io/benc-uk/mockery:latest -f /specs/nanomon.json
+```
+
+## Go Install 
 
 Install from source if you have Go on your machine
 
