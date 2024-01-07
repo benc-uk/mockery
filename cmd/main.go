@@ -74,6 +74,7 @@ func main() {
 	}
 
 	// Load spec file
+	logger.Info("Will try to load spec document: " + config.specFile)
 	var err error
 	spec, err = ParseV2Spec(config.specFile)
 	if err != nil {
