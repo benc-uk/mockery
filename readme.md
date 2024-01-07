@@ -6,6 +6,10 @@ It can be use to act as mock or placeholder server for testing, mocking, or othe
 
 It goes beyond providing simple empty HTTP responses, and will use any examples discovered in the OAS to provide a JSON payload response back, obviously these responses are static, however they do increase the usefulness of the API tremendously.
 
+[![CI Pipeline](https://github.com/benc-uk/mockery/actions/workflows/ci-build.yml/badge.svg)](https://github.com/benc-uk/mockery/actions/workflows/ci-build.yml)
+
+![](https://img.shields.io/github/last-commit/benc-uk/mockery) ![](https://img.shields.io/github/release-date/benc-uk/mockery) ![](https://img.shields.io/github/v/release/benc-uk/mockery) ![](https://img.shields.io/github/commit-activity/m/benc-uk/mockery)
+
 ![screen shot](./etc/screenshot.png)
 
 # 💾 Install & Run
