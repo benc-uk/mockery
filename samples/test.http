@@ -35,6 +35,6 @@ GET http://localhost:8000/api/results
 DELETE http://localhost:8000/api/monitors/1234
 x-mock-response-code: 200
 
-###
+### Pet Store
 
-POST http://localhost:8000/v2/pet
+GET http://localhost:8000/v2/pet/findByTags

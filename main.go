@@ -20,32 +20,47 @@ type Config struct {
 	specFile    string
 	contentType string
 	port        int
+	logLevel    slog.Level
 }
 
 var config = Config{
 	specFile:    "",
 	contentType: "application/json",
 	port:        8000,
+	logLevel:    slog.LevelInfo,
 }
 var logger *slog.Logger
 
-func init() {
-	w := os.Stderr
-	logger = slog.New(tint.NewHandler(w, nil))
-}
-
 func main() {
 	// Command line flags
+	var levelString string
 	flag.StringVar(&config.specFile, "file", "", "OpenAPI spec file, can be JSON or YAML")
 	flag.StringVar(&config.specFile, "f", "", "OpenAPI spec file, can be JSON or YAML")
 	flag.StringVar(&config.contentType, "content-type", "application/json", "Default content type to use in responses")
 	flag.IntVar(&config.port, "port", 8000, "Port to run mock server on")
+	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error (default info))")
 	flag.Parse()
 
 	if config.specFile == "" {
 		logger.Error("No OpenAPI spec file specified, please use -file or -f")
 		os.Exit(1)
 	}
+
+	w := os.Stderr
+	levelString = strings.ToLower(levelString)
+	if levelString == "debug" {
+		config.logLevel = slog.LevelDebug
+	} else if levelString == "info" {
+		config.logLevel = slog.LevelInfo
+	} else if levelString == "warn" {
+		config.logLevel = slog.LevelWarn
+	} else if levelString == "error" {
+		config.logLevel = slog.LevelError
+	}
+
+	logger = slog.New(tint.NewHandler(w, &tint.Options{
+		Level: config.logLevel,
+	}))
 
 	// Load spec file
 	spec, err := ParseV2Spec(config.specFile)
@@ -73,7 +88,7 @@ func main() {
 	// Nice stuff
 	if spec.Info.Title != "" {
 		ver := spec.Info.Version
-		logger.Info("Starting API Mocker", slog.Any("title", spec.Info.Title), slog.Any("version", ver))
+		logger.Warn("Starting API Mocker", slog.Any("title", spec.Info.Title), slog.Any("version", ver))
 	}
 
 	// Ignore CORS
@@ -111,12 +126,7 @@ func main() {
 		}
 	}
 
-	// print all routes
-	// for _, route := range r.Routes() {
-	// 	logger.Info("🚀 Route added", slog.Any("path", route.Pattern))
-	// }
-
-	logger.Info("Server started", slog.Any("port", config.port))
+	logger.Warn("Server started", slog.Any("port", config.port))
 	_ = http.ListenAndServe(fmt.Sprintf(":%d", config.port), r)
 }
 
@@ -179,29 +189,48 @@ func parseResponseExample(resp Response, respName string, defs map[string]Schema
 	}
 
 	// Complex case: Schema has more complex structure
-	if resp.Schema.Type != "" || resp.Schema.Ref != "" {
+	if resp.Schema.Type != "" || resp.Schema.Ref != "" || resp.Schema.Items.Type != "" || resp.Schema.Items.Ref != "" {
 		return parseSchema(resp.Schema, defs)
 	}
 
 	return nil
 }
 
-func parseSchema(schema Schema, defs map[string]Schema) interface{} {
+func parseSchema(schema Schema, models map[string]Schema) interface{} {
+	logger.Debug("Parsing schema", slog.Any("schema", schema))
+
+	var ref string
 	if schema.Ref != "" {
-		// split ref into parts
-		refParts := strings.Split(schema.Ref, "/")
+		ref = schema.Ref
+	}
+	if schema.Items.Ref != "" {
+		ref = schema.Items.Ref
+	}
+
+	// Resolve references
+	if ref != "" {
+		// Split ref into parts
+		refParts := strings.Split(ref, "/")
 		if len(refParts) != 3 {
 			return nil
 		}
 
-		// get definition
-		def, defExists := defs[refParts[2]]
+		// Get model definition
+		referencedSchema, defExists := models[refParts[2]]
 		if !defExists {
 			return nil
 		}
 
-		return parseSchema(def, defs)
+		// Parse definition
+		logger.Info("Parsing definition", slog.Any("name", refParts[2]))
+		parsedSchema := parseSchema(referencedSchema, models)
 
+		// If it's an array, return an array of the parsed schema
+		if schema.Type == "array" {
+			return []interface{}{parsedSchema}
+		}
+
+		return parsedSchema
 	}
 
 	if schema.Items.Type != "" {
@@ -230,7 +259,7 @@ func parseProperties(properties map[string]Properties) interface{} {
 		if prop.Example == nil {
 			switch prop.Type {
 			case "string":
-				exampleVal = "a string"
+				exampleVal = "string"
 			case "integer":
 				exampleVal = 0
 			case "boolean":

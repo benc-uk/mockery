@@ -67,6 +67,7 @@ type Schema struct {
 type Items struct {
 	Type       string                `json:"type"`
 	Properties map[string]Properties `json:"properties"`
+	Ref        string                `json:"$ref"`
 }
 
 type Properties struct {

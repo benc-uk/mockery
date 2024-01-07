@@ -219,7 +219,7 @@
         ],
         "responses": {
           "200": {
-            "description": "successful operation",
+            "description": "successful operation find",
             "schema": {
               "type": "array",
               "items": {
