@@ -76,3 +76,12 @@ type Properties struct {
 	Example    interface{}           `json:"example" yaml:"example"`
 	Properties map[string]Properties `json:"properties" yaml:"properties"`
 }
+
+func (s Schema) isEmpty() bool {
+	return s.Type == "" && s.Ref == "" && s.Properties == nil &&
+		s.Items.isEmpty() && s.AdditionalProperties == nil && s.Example == nil
+}
+
+func (i Items) isEmpty() bool {
+	return i.Type == "" && i.Ref == "" && i.Properties == nil
+}

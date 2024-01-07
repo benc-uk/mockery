@@ -45,6 +45,15 @@ func ParseV2Spec(filePath string) (OpenAPIv2, error) {
 func (s Schema) parse() interface{} {
 	logger.Debug("Parsing schema", slog.Any("schema", s))
 
+	if s.isEmpty() {
+		return nil
+	}
+
+	// Simple case: Schema has example object
+	if s.Example != nil {
+		return s.Example
+	}
+
 	var ref string
 	if s.isRef() {
 		ref = s.Ref
@@ -130,12 +139,9 @@ func (resp Response) parse() interface{} {
 		ex := resp.Examples[contentType]
 		if ex != nil {
 			return ex
+		} else {
+			logger.Warn("No response example found for content type", slog.Any("content_type", contentType))
 		}
-	}
-
-	// Simple case 2: Schema has an example object
-	if resp.Schema.Example != nil {
-		return resp.Schema.Example
 	}
 
 	// Complex case: We need to go down the rabbit hole of the schema

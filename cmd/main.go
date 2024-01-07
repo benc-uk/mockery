@@ -40,6 +40,13 @@ const contentType = "application/json"
 var logger *slog.Logger
 var spec OpenAPIv2
 
+func init() {
+	// Fall back logger, if no config is loaded
+	logger = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
+		Level: slog.LevelInfo,
+	}))
+}
+
 // Main entry point
 func main() {
 	fmt.Println(banner.Inline("mockery"))
@@ -52,7 +59,6 @@ func main() {
 	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error")
 	flag.Parse()
 
-	w := os.Stderr
 	levelString = strings.ToLower(levelString)
 	if levelString == "debug" {
 		config.logLevel = slog.LevelDebug
@@ -64,9 +70,11 @@ func main() {
 		config.logLevel = slog.LevelError
 	}
 
-	logger = slog.New(tint.NewHandler(w, &tint.Options{
-		Level: config.logLevel,
-	}))
+	if config.logLevel != slog.LevelInfo {
+		logger = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
+			Level: config.logLevel,
+		}))
+	}
 
 	if config.specFile == "" {
 		logger.Error("No OpenAPI spec file specified, please use -file or -f")

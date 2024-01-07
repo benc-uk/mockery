@@ -17,7 +17,6 @@ env:
   IMAGE_REG: ghcr.io
   IMAGE_NAME: benc-uk/mockery
   IMAGE_TAG: latest
-  VERSION: dev
 
 permissions:
   packages: write
@@ -43,6 +42,10 @@ jobs:
       # Validate code
       - name: Check code for linting and format errors
         run: make lint
+
+      # Run our tests
+      - name: Run unit tests
+        run: make test
 
       # Build image
       - name: Build the container image

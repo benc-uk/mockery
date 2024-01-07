@@ -82,7 +82,7 @@ Pre-reqs
 - Go v1.21+
 - Linux/bash/make
 
-A makefile acts as the frontend to working locally with the project, running `make install-tools` will install required dev tools locally. The other targets are fairly self explanatory. All Go source is in `cmd/` and single 'main' package for simplicity
+A makefile acts as the frontend & guide to working locally with the project, running `make install-tools` will install required dev tools locally. The other targets are fairly self explanatory. All Go source is in `cmd/` and single 'main' package for simplicity
 
 ```text
 $ make
@@ -97,4 +97,30 @@ build                🔨 Build binaries for all platforms
 run                  🏃 Test and hotreload the app
 clean                🧹 Clean up, remove dev data and files
 release              🚀 Release a new version on GitHub
+```
+
+## Common Tasks
+
+### Linting
+
+Make sure you have run `make install-tools` first
+
+```bash
+make lint
+```
+
+### Building & Pushing Images
+
+Set the tag you want to build & push and run
+
+```bash
+IMAGE_TAG=x.y.z make image push
+```
+
+### Releasing to GitHub
+
+Set the version you want to release and run
+
+```bash
+VERSION=x.y.z make release
 ```

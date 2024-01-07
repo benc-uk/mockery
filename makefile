@@ -62,17 +62,20 @@ clean: ## 🧹 Clean up, remove dev data and files
 	@figlet $@ || true
 	@rm -rf bin .tools tmp
 
-release: check-vars ## 🚀 Release a new version on GitHub
+release: build ## 🚀 Release a new version on GitHub
 	@figlet $@ || true
+	@if [[ -z "${VERSION}" ]]; then echo "💥 Error! Required variable VERSION is not set!"; exit 1; fi
 	@echo "Releasing version $(VERSION) on GitHub"
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	gh release create "$(VERSION)" --title "v$(VERSION)" \
 	--latest --notes "Release v$(VERSION)" 
 	gh release upload "$(VERSION)" ./bin/mockery-linux ./bin/mockery-windows ./bin/mockery-mac
 
+test: ## 🧪 Run unit tests
+	@figlet $@ || true
+	go test -v ./...
+	
 check-vars:
 	@if [[ -z "${IMAGE_REG}" ]]; then echo "💥 Error! Required variable IMAGE_REG is not set!"; exit 1; fi
 	@if [[ -z "${IMAGE_NAME}" ]]; then echo "💥 Error! Required variable IMAGE_NAME is not set!"; exit 1; fi
 	@if [[ -z "${IMAGE_TAG}" ]]; then echo "💥 Error! Required variable IMAGE_TAG is not set!"; exit 1; fi
-	@if [[ -z "${VERSION}" ]]; then echo "💥 Error! Required variable VERSION is not set!"; exit 1; fi
-
