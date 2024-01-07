@@ -10,7 +10,12 @@ It goes beyond providing simple empty HTTP responses, and will use any examples 
 
 # Install
 
-Yes
+Install from source if you have Go on your machine
+
+```bash
+go install github.com/benc-uk/mockery/cmd@latest
+mv $(go env GOPATH)/bin/cmd ~/.local/bin/mockery
+```
 
 # Usage
 

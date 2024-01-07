@@ -14,10 +14,10 @@ COPY go.sum .
 RUN go mod download
 
 # Copy in Go source files
-COPY src/ ./src/
+COPY cmd/ ./cmd/
 
 # Now run the build
-RUN go build -o mockery ./src
+RUN go build -o mockery github.com/benc-uk/mockery/cmd
 
 # ================================================================================================
 # === Stage 2: Get binary into a lightweight container ===========================================

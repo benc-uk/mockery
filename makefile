@@ -7,7 +7,7 @@ export
 
 # Internal variables you don't want to change
 SHELL := /bin/bash
-SRC_DIR := ./src
+SRC_DIR := ./cmd
 REPO_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 GOLINT_PATH := $(REPO_DIR)/.tools/golangci-lint
 AIR_PATH := $(REPO_DIR)/.tools/air
