@@ -3,8 +3,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main -f ./samples/petstore.json"
-  cmd = "go build -o ./tmp/main ."
+  bin = "./tmp/main -f ./samples/nanomon.yaml"
+  cmd = "go build -o ./tmp/main ./src"
   include_ext = ["go", "json"]
 
 [color]

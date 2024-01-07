@@ -33,8 +33,7 @@ GET http://localhost:8000/api/results
 ###
 
 DELETE http://localhost:8000/api/monitors/1234
-x-mock-response-code: 200
 
-### Pet Store
+### 
 
-GET http://localhost:8000/v2/pet/findByTags
+GET http://localhost:8000/api/events/3
