@@ -17,6 +17,7 @@ env:
   IMAGE_REG: ghcr.io
   IMAGE_NAME: benc-uk/mockery
   IMAGE_TAG: latest
+  VERSION: dev
 
 permissions:
   packages: write
