@@ -46,8 +46,8 @@ func main() {
 
 	// Command line flags
 	var levelString string
-	flag.StringVar(&config.specFile, "file", "", "OpenAPI spec file in JSON format. REQUIRED")
-	flag.StringVar(&config.specFile, "f", "", "OpenAPI spec file in JSON format. REQUIRED")
+	flag.StringVar(&config.specFile, "file", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
+	flag.StringVar(&config.specFile, "f", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
 	flag.IntVar(&config.port, "port", 8000, "Port to run mock server on")
 	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error")
 	flag.Parse()

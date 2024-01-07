@@ -48,11 +48,13 @@ push: check-vars ## 📤 Push container image to registry
 	@figlet $@ || true
 	docker push $(IMAGE_PREFIX):$(IMAGE_TAG)
 
-build: ## 🔨 Run a local build without a container
+build: ## 🔨 Build binaries for all platforms
 	@figlet $@ || true
-	go build -o bin/mockery $(SRC_DIR)/...
+	GOOS=linux GOARCH=amd64 go build -o bin/mockery-linux $(SRC_DIR)/...
+	GOOS=windows GOARCH=amd64 go build -o bin/mockery-windows $(SRC_DIR)/...
+	GOOS=darwin GOARCH=arm64 go build -o bin/mockery-mac $(SRC_DIR)/...
 
-run: ## 🏃 Run application, used for local development
+run: ## 🏃 Test and hotreload the app
 	@figlet $@ || true
 	$(AIR_PATH) -c .air.toml
 
@@ -65,7 +67,8 @@ release: check-vars ## 🚀 Release a new version on GitHub
 	@echo "Releasing version $(VERSION) on GitHub"
 	@echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 	gh release create "$(VERSION)" --title "v$(VERSION)" \
-	--latest 
+	--latest --notes "Release v$(VERSION)" 
+	gh release upload "$(VERSION)" ./bin/mockery-linux ./bin/mockery-windows ./bin/mockery-mac
 
 check-vars:
 	@if [[ -z "${IMAGE_REG}" ]]; then echo "💥 Error! Required variable IMAGE_REG is not set!"; exit 1; fi

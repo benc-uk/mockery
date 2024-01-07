@@ -3,9 +3,9 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main -f ./samples/nanomon.yaml"
-  cmd = "go build -o ./tmp/main ./src"
-  include_ext = ["go", "json"]
+  bin = "./tmp/main -f ./samples/nanomon.json"
+  cmd = "go build -o ./tmp/main ./cmd"
+  include_ext = ["go", "json", "yaml"]
 
 [color]
   app = ""
