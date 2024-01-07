@@ -1,10 +1,10 @@
 # 🎭 Mockery
 
-Mockery is a tool which takes a Open API Specification (OAS) and runs a HTTP API listener to accept requests based on the spec. It will parse the provided OAS document and discover paths, responses etc and configure handlers to respond accordingly. Currently it supports v2 of Swagger/OAS.
+Mockery is a tool for creating a mock API from a Open API Specification (OAS or Swagger), it runs a HTTP listener accepting requests based on the provided spec. It will parse the OAS document and discover paths, responses, schemas etc and configure handlers to respond accordingly. Currently it supports v2 of Swagger/OAS. It is written in Go and uses the [Chi router & mux](https://github.com/go-chi/chi)
 
 It can be use to act as mock or placeholder server for testing, mocking, or other uses cases when the real API endpoint is not available.
 
-It goes beyond providing simple empty HTTP responses, and will use any examples discovered in the OAS to provide a payload repsonse back, obviously these responses are static, however they do increase the usefulness of the API tremendously.
+It goes beyond providing simple empty HTTP responses, and will use any examples discovered in the OAS to provide a JSON payload response back, obviously these responses are static, however they do increase the usefulness of the API tremendously.
 
 ![screen shot](./etc/screenshot.png)
 
@@ -23,15 +23,15 @@ chmod +x ./mockery
 
 ## Run From Container
 
-A container image is available on GitHub. You will need to mount ot inject the directory where your OAS spec file is located and supply that as an arguement when running, for example:
+A container image is available on GitHub. You will need to mount ot inject the directory where your OAS spec file is located and supply that as an argument when running, for example:
 
 ```bash
 docker run -v ./some_directory:/specs \
  -p 8000:8000 \
- ghcr.io/benc-uk/mockery:latest -f /specs/nanomon.json
+ ghcr.io/benc-uk/mockery:latest -f /specs/swagger.json
 ```
 
-## Go Install 
+## Go Install
 
 Install from source if you have Go on your machine
 
@@ -40,7 +40,9 @@ go install github.com/benc-uk/mockery/cmd@latest
 mv $(go env GOPATH)/bin/cmd ~/.local/bin/mockery
 ```
 
-# 🧩 Usage
+# 🎈 Usage
+
+Mockery is a command line tool, with only a handful of arguments. You must provide an OpenAPI spec file with either `-file` or `-f`. By default it will start and listen on port 8000
 
 ```text
 $ mockery
@@ -54,16 +56,14 @@ $ mockery
         Port to run mock server on (default 8000)
 ```
 
-You must provide an OpenAPI spec file with either `-file` or `-f`. By default it will start and listen on port 8000
-
-# Response Handling Logic
+# 🧩 Response Handling Logic
 
 The OAS spec is parsed and used with the following logic:
 
-- Routes are taken from the `paths` section, with matching operations, e.g. `GET` & `POST` etc. And a matching handler created for each path and method.
+- Routes are taken from the `paths` section, with matching operations, e.g. `GET` & `POST` etc. a HTTP handler is created for each path and method.
 - Path parameters enclosed in `{}` like `/api/orders/{orderId}` are matched as part of the route.
 - The `responses` section is scanned for a response status code, 200 is the default
-  - If 200 is not a present in responses, then the first response in the list is used. 
+  - If 200 is not a present in responses, then the first response in the list is used.
   - To get a different response/status supply the `x-mock-response-code` header on the request.
 - To create a payload for the response, the selected response object is used as follows:
   - If the response has an `examples` field the `application/json` key is used & returned.
@@ -71,16 +71,18 @@ The OAS spec is parsed and used with the following logic:
   - Otherwise if the response has a `schema` it is parsed and traversed, the fields `properties`, `items` are used and `$ref` can reference models from the `definitions` section of the spec.
     - If no `example` are found at the field level, a fallback default value for the type is used, e.g. `"string"` or `0` or `false`
 
-## Developer Guide
+# 🧑‍💻 Developer Guide
 
 Pre-reqs
 
 - Go v1.21+
 - Linux/bash/make
 
-Makefile is the frontend
+A makefile acts as the frontend to working locally with the project, running `make install-tools` will install required dev tools locally. The other targets are fairly self explanatory. All Go source is in `cmd/` and single 'main' package for simplicity
 
 ```text
+$ make
+
 help                 💬 This help message :)
 install-tools        🔮 Install dev tools into project .tools directory
 lint                 🔍 Lint & format check only, sets exit code on error for CI

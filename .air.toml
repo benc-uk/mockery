@@ -3,8 +3,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main -f ./samples/nanomon.json"
-  cmd = "go build -o ./tmp/main ./cmd"
+  bin = "./tmp/main -f ./samples/nanomon.yaml"
+  cmd = "go build -o ./tmp/main github.com/benc-uk/mockery/cmd"
   include_ext = ["go", "json", "yaml"]
 
 [color]
