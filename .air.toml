@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/main -f ./samples/nanomon.yaml"
+  bin = "./tmp/main -f ~/lfa-latest.json"
   cmd = "go build -o ./tmp/main github.com/benc-uk/mockery/cmd"
   include_ext = ["go", "json", "yaml"]
 

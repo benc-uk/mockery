@@ -131,7 +131,7 @@ func (s Schema) parse() interface{} {
 
 // Parse a response object this is the start of the parsing process from the handler
 func (resp Response) parse() interface{} {
-	logger.Info("Building payload for", slog.Any("status", resp.StatusCode), slog.Any("description", resp.Description))
+	logger.Debug("Building payload for", slog.Any("status", resp.StatusCode), slog.Any("description", resp.Description))
 
 	// Simple case 1: Response has examples defined per content type
 	if resp.Examples != nil {

@@ -13,16 +13,13 @@ func init() {
 	}))
 }
 
-func TestParseV2Spec(t *testing.T) {
+func TestFileParser(t *testing.T) {
 	// Create a temporary file with some valid OpenAPI v2 spec
 	tempFileJSON, err := os.CreateTemp("", "*.json")
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer os.Remove(tempFileJSON.Name())
-
-	// write a simple JSON spec to the file
 	_, err = tempFileJSON.Write([]byte(`
 {
 	"swagger": "2.0",
@@ -36,7 +33,6 @@ func TestParseV2Spec(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	tempFileJSON.Close()
 
 	// Create a temporary file with YAML spec
@@ -44,10 +40,7 @@ func TestParseV2Spec(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	defer os.Remove(tempFileYAML.Name())
-
-	// write a simple YAML spec to the file
 	_, err = tempFileYAML.Write([]byte(`
 swagger: "2.0"
 info:
@@ -58,14 +51,24 @@ paths: {}
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	tempFileYAML.Close()
+
+	tempInvalidFile, err := os.CreateTemp("", "*.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tempInvalidFile.Name())
+	_, err = tempInvalidFile.Write([]byte(`blah wibble`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tempInvalidFile.Close()
 
 	t.Run("valid_json", func(t *testing.T) {
 		// Test parsing a valid file
 		_, err = ParseV2Spec(tempFileJSON.Name())
 		if err != nil {
-			t.Errorf("ParseV2Spec failed with valid file, got: %v", err)
+			t.Errorf("failed with valid file, got: %v", err)
 		}
 	})
 
@@ -73,7 +76,7 @@ paths: {}
 	t.Run("valid_yaml", func(t *testing.T) {
 		_, err = ParseV2Spec(tempFileYAML.Name())
 		if err != nil {
-			t.Errorf("ParseV2Spec failed with valid YAML file, got: %v", err)
+			t.Errorf("failed with valid YAML file, got: %v", err)
 		}
 	})
 
@@ -81,55 +84,75 @@ paths: {}
 	t.Run("no_file", func(t *testing.T) {
 		_, err = ParseV2Spec("non_existent_file.yaml")
 		if err == nil {
-			t.Error("ParseV2Spec did not fail with non-existent file")
+			t.Error("did not fail with non-existent file")
 		}
 	})
+
+	// Test parsing an invalid file
+	t.Run("invalid_file", func(t *testing.T) {
+		_, err = ParseV2Spec(tempInvalidFile.Name())
+		if err == nil {
+			t.Error("did not fail with invalid file")
+		}
+	})
+
 }
 
-func TestParseResponse(t *testing.T) {
-	emptyResp := Response{
-		Description: "An empty response",
-		Schema:      Schema{},
-	}
+func TestResponseParser(t *testing.T) {
+	emptyResp := Response{}
 
-	respExample := Response{
+	respExampleJSON := Response{
 		Description: "Response with example",
 		Examples: map[string]any{
 			"application/json": map[string]any{
-				"foo":    "bar",
-				"number": 42,
+				"key1": "anything",
+				"key2": 42,
 			},
 		},
 	}
 
-	schemaExample := Response{
-		Description: "Schema with example",
-		Schema: Schema{
-			Example: "Hello, World!",
+	respExamplePlain := Response{
+		Description: "Response with example",
+		Examples: map[string]any{
+			"text/plain": "Hello, World!",
 		},
 	}
 
 	// Test parsing an empty response
 	t.Run("empty", func(t *testing.T) {
-		data := emptyResp.parse()
-		if data != nil {
-			t.Error("parseResponse failed with empty response")
+		if emptyResp.parse() != nil {
+			t.Error("expected nil data from response.parse()")
 		}
 	})
 
 	// Test parsing a response with an example
-	t.Run("empty", func(t *testing.T) {
-		data := respExample.parse()
+	t.Run("resp_example_json", func(t *testing.T) {
+		data := respExampleJSON.parse()
 		if data == nil {
-			t.Error("parseResponse failed with example")
+			t.Error("expected data from response.parse()")
+		}
+
+		// convert to map
+		dataMap, ok := data.(map[string]any)
+		if !ok {
+			t.Error("expected data to be a map")
+		}
+
+		// check that the map has the expected keys
+		if value, ok := dataMap["key1"]; true {
+			if !ok {
+				t.Error("expected key 'key1' in data map")
+			}
+
+			if value.(string) != "anything" {
+				t.Errorf("expected value of 'key1' to be 'anything', got: %v", value)
+			}
 		}
 	})
 
-	// Test parsing a schema level example
-	t.Run("empty", func(t *testing.T) {
-		data := schemaExample.parse()
-		if data == nil {
-			t.Error("parseResponse failed with schema + example")
+	t.Run("resp_example_plain", func(t *testing.T) {
+		if respExamplePlain.parse() != nil {
+			t.Error("expected nil data from response.parse()")
 		}
 	})
 }

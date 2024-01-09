@@ -59,6 +59,18 @@ func main() {
 	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error")
 	flag.Parse()
 
+	portEnv := os.Getenv("PORT")
+	if portEnv != "" {
+		if port, err := strconv.Atoi(portEnv); err == nil {
+			config.port = port
+		}
+	}
+
+	pathEnv := os.Getenv("SPEC_FILE")
+	if pathEnv != "" {
+		config.specFile = pathEnv
+	}
+
 	levelString = strings.ToLower(levelString)
 	if levelString == "debug" {
 		config.logLevel = slog.LevelDebug
@@ -90,7 +102,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	r := chi.NewRouter()
+	// The main router used by the server for all requests
+	router := chi.NewRouter()
 
 	// Handle base path
 	basePath := spec.BasePath
@@ -119,10 +132,15 @@ func main() {
 
 	// Ignore *all* CORS, this is a mock server after all
 	cors := cors.AllowAll()
-	r.Use(cors.Handler)
+	router.Use(cors.Handler)
 
 	// Add server headers
-	r.Use(middleware.SetHeader("Server", fmt.Sprintf("Mockery: %s v%s", spec.Info.Title, spec.Info.Version)))
+	router.Use(middleware.SetHeader("Server", fmt.Sprintf("Mockery: %s v%s", spec.Info.Title, spec.Info.Version)))
+	// custom not found handler
+	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		logger.Error("Not found", slog.Any("path", r.URL.Path))
+		w.WriteHeader(404)
+	})
 
 	// Loop over all paths
 	for path, pathSpec := range spec.Paths {
@@ -133,22 +151,22 @@ func main() {
 		fullPath := basePath + path
 		if pathSpec.isGet() {
 			logger.Info("🔵 Adding GET route", slog.Any("path", fullPath))
-			r.Get(fullPath, createResponseHandler(pathSpec.Get))
+			router.Get(fullPath, createResponseHandler(pathSpec.Get))
 		}
 
 		if pathSpec.isPost() {
 			logger.Info("🟢 Adding POST route", slog.Any("path", fullPath))
-			r.Post(fullPath, createResponseHandler(pathSpec.Post))
+			router.Post(fullPath, createResponseHandler(pathSpec.Post))
 		}
 
 		if pathSpec.isPut() {
 			logger.Info("🟠 Adding PUT route", slog.Any("path", fullPath))
-			r.Put(fullPath, createResponseHandler(pathSpec.Put))
+			router.Put(fullPath, createResponseHandler(pathSpec.Put))
 		}
 
 		if pathSpec.isDelete() {
 			logger.Info("🔴 Adding DELETE route", slog.Any("path", fullPath))
-			r.Delete(fullPath, createResponseHandler(pathSpec.Delete))
+			router.Delete(fullPath, createResponseHandler(pathSpec.Delete))
 		}
 	}
 
@@ -157,7 +175,7 @@ func main() {
 	// Create custom server
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.port),
-		Handler:      r,
+		Handler:      router,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
