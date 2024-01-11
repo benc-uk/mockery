@@ -36,4 +36,5 @@ DELETE http://localhost:8000/api/monitors/1234
 
 ### 
 
-GET http://localhost:8000/api/events/
+GET http://localhost:8000/instruments/fx-forwards/v1
+x-api-key: 123

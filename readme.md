@@ -44,12 +44,15 @@ go install github.com/benc-uk/mockery/cmd@latest
 mv $(go env GOPATH)/bin/cmd ~/.local/bin/mockery
 ```
 
-# 🎈 Usage
+# 💻 Usage
 
-Mockery is a command line tool, with only a handful of arguments. You must provide an OpenAPI spec file with either `-file` or `-f`. By default it will start and listen on port 8000
+Mockery is a command line tool, with only a handful of arguments. You must provide an OpenAPI spec file with either `-file` or `-f`. By default the services will start and listen on port 8000
 
-```text
-$ mockery
+```
+  -api-key string
+        Enable API key authentication
+  -cert-path string
+        Path to directory wth cert.pem & key.pem to enable TLS
   -f string
         OpenAPI spec file in JSON or YAML format. REQUIRED
   -file string
@@ -59,6 +62,18 @@ $ mockery
   -port int
         Port to run mock server on (default 8000)
 ```
+
+## Config
+
+Configuration can be provided as command line arguments as described above, in addition environmental variables can also be set & used, these will override any set on the command line 
+
+| Variable name | Matching argument |
+| ------------- | ----------------- |
+| PORT          | `-port`           |
+| SPEC_FILE     | `-file`           |
+| LOG_LEVEL     | `-log-level`      |
+| API_KEY       | `-api-key`        |
+| CERT_PATH     | `-cert-path`      |
 
 # 🧩 Response Handling Logic
 
@@ -99,7 +114,7 @@ clean                🧹 Clean up, remove dev data and files
 release              🚀 Release a new version on GitHub
 ```
 
-## Common Tasks
+## Common Dev Tasks
 
 ### Linting
 

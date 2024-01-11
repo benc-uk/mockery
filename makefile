@@ -13,7 +13,7 @@ GOLINT_PATH := $(REPO_DIR)/.tools/golangci-lint
 AIR_PATH := $(REPO_DIR)/.tools/air
 
 .EXPORT_ALL_VARIABLES:
-.PHONY: help image push build run lint lint-fix
+.PHONY: help install-tools lint lint-fix image push build run clean release test check-vars install
 .DEFAULT_GOAL := help
 
 # Override these if building your own images

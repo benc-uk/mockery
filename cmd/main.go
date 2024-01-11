@@ -6,6 +6,7 @@ package main
 // ----------------------------------------------------------------------------
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -27,16 +28,13 @@ type Config struct {
 	specFile string
 	port     int
 	logLevel slog.Level
-}
-
-var config = Config{
-	specFile: "",
-	port:     8000,
-	logLevel: slog.LevelInfo,
+	apiKey   string
+	certPath string
 }
 
 const contentType = "application/json"
 
+// Globals, so sue me
 var logger *slog.Logger
 var spec OpenAPIv2
 
@@ -51,42 +49,16 @@ func init() {
 func main() {
 	fmt.Println(banner.Inline("mockery"))
 
-	// Command line flags
-	var levelString string
-	flag.StringVar(&config.specFile, "file", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
-	flag.StringVar(&config.specFile, "f", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
-	flag.IntVar(&config.port, "port", 8000, "Port to run mock server on")
-	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error")
-	flag.Parse()
-
-	portEnv := os.Getenv("PORT")
-	if portEnv != "" {
-		if port, err := strconv.Atoi(portEnv); err == nil {
-			config.port = port
-		}
+	var config = Config{
+		specFile: "",
+		port:     8000,
+		logLevel: slog.LevelInfo,
+		apiKey:   "",
+		certPath: "",
 	}
 
-	pathEnv := os.Getenv("SPEC_FILE")
-	if pathEnv != "" {
-		config.specFile = pathEnv
-	}
-
-	levelString = strings.ToLower(levelString)
-	if levelString == "debug" {
-		config.logLevel = slog.LevelDebug
-	} else if levelString == "info" {
-		config.logLevel = slog.LevelInfo
-	} else if levelString == "warn" {
-		config.logLevel = slog.LevelWarn
-	} else if levelString == "error" {
-		config.logLevel = slog.LevelError
-	}
-
-	if config.logLevel != slog.LevelInfo {
-		logger = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
-			Level: config.logLevel,
-		}))
-	}
+	// Populate config from command line flags and environment variables
+	config.process()
 
 	if config.specFile == "" {
 		logger.Error("No OpenAPI spec file specified, please use -file or -f")
@@ -136,11 +108,37 @@ func main() {
 
 	// Add server headers
 	router.Use(middleware.SetHeader("Server", fmt.Sprintf("Mockery: %s v%s", spec.Info.Title, spec.Info.Version)))
-	// custom not found handler
+
+	// Custom not found handler
 	router.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		logger.Error("Not found", slog.Any("path", r.URL.Path))
 		w.WriteHeader(404)
 	})
+
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("Mockery - " + title + " v" + version + "\n"))
+	})
+
+	// Check for x-api-key header if auth is enabled
+	if config.apiKey != "" {
+		router.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Header.Get("x-api-key") == "" {
+					logger.Error("Not authorised, missing API key")
+					w.WriteHeader(401)
+					return
+				}
+
+				if r.Header.Get("x-api-key") != config.apiKey {
+					logger.Error("Invalid API key")
+					w.WriteHeader(401)
+					return
+				}
+
+				next.ServeHTTP(w, r)
+			})
+		})
+	}
 
 	// Loop over all paths
 	for path, pathSpec := range spec.Paths {
@@ -170,7 +168,27 @@ func main() {
 		}
 	}
 
-	logger.Warn("Mockery server started", slog.Any("port", config.port))
+	useTLS := false
+
+	// Check for TLS cert & key files if certPath is set
+	if config.certPath != "" {
+		logger.Debug("Enabling TLS, checking cert & key files", slog.Any("certPath", config.certPath))
+
+		useTLS = true
+
+		// Check cert & key files exist
+		if _, err := os.Stat(config.certPath + "/cert.pem"); os.IsNotExist(err) {
+			logger.Error("cert.pem not found, TLS will be disabled", slog.Any("certPath", config.certPath))
+
+			useTLS = false
+		}
+
+		if _, err := os.Stat(config.certPath + "/key.pem"); os.IsNotExist(err) {
+			logger.Error("key.pem not found, TLS will be disabled", slog.Any("certPath", config.certPath))
+
+			useTLS = false
+		}
+	}
 
 	// Create custom server
 	srv := &http.Server{
@@ -181,7 +199,21 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	// Start server
+	logger.Warn("Mockery server started", slog.Any("port", config.port), slog.Any("tls", useTLS))
+
+	// If TLS is enabled, start using ListenAndServeTLS
+	if useTLS {
+		srv.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+
+		if err := srv.ListenAndServeTLS(config.certPath+"/cert.pem", config.certPath+"/key.pem"); err != nil {
+			logger.Error("Failed to start TLS server", slog.Any("error", err))
+			os.Exit(1)
+		}
+	}
+
+	// Start regular HTTP listener
 	if err := srv.ListenAndServe(); err != nil {
 		logger.Error("Failed to start server", slog.Any("error", err))
 		os.Exit(1)
@@ -243,5 +275,69 @@ func createResponseHandler(op Operation) http.HandlerFunc {
 			logger.Warn("No example found, response will be empty", slog.Any("status", respIndex))
 			w.WriteHeader(statusCode)
 		}
+	}
+}
+
+// Process command line flags and environment variables to build config
+func (c *Config) process() {
+	// Command line flags
+	var levelString string
+	flag.StringVar(&c.specFile, "file", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
+	flag.StringVar(&c.specFile, "f", "", "OpenAPI spec file in JSON or YAML format. REQUIRED")
+	flag.IntVar(&c.port, "port", 8000, "Port to run mock server on")
+	flag.StringVar(&levelString, "log-level", "info", "Log level: debug, info, warn, error")
+	flag.StringVar(&c.apiKey, "api-key", "", "Enable API key authentication")
+	flag.StringVar(&c.certPath, "cert-path", "", "Path to directory wth cert.pem & key.pem to enable TLS")
+	flag.Parse()
+
+	// Environment variables can override command line flags
+	if os.Getenv("SPEC_FILE") != "" {
+		c.specFile = os.Getenv("SPEC_FILE")
+	}
+
+	if os.Getenv("API_KEY") != "" {
+		c.apiKey = os.Getenv("API_KEY")
+	}
+
+	if os.Getenv("CERT_PATH") != "" {
+		c.certPath = os.Getenv("CERT_PATH")
+	}
+
+	if os.Getenv("LOG_LEVEL") != "" {
+		levelString = os.Getenv("LOG_LEVEL")
+	}
+
+	portEnv := os.Getenv("PORT")
+	if portEnv != "" {
+		if port, err := strconv.Atoi(portEnv); err == nil {
+			c.port = port
+		}
+	}
+
+	// Print help if no args
+	if c.specFile == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	// Set log level
+	levelString = strings.ToLower(levelString)
+	switch levelString {
+	case "debug":
+		c.logLevel = slog.LevelDebug
+	case "info":
+		c.logLevel = slog.LevelInfo
+	case "warn":
+		c.logLevel = slog.LevelWarn
+	case "error":
+		c.logLevel = slog.LevelError
+	default:
+		c.logLevel = slog.LevelInfo
+	}
+
+	if c.logLevel != slog.LevelInfo {
+		logger = slog.New(tint.NewHandler(os.Stdout, &tint.Options{
+			Level: c.logLevel,
+		}))
 	}
 }
