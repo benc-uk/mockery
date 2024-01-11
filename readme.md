@@ -21,7 +21,7 @@ Binaries are available as GitHub releases https://github.com/benc-uk/mockery/rel
 Quick download on Linux
 
 ```bash
-wget https://github.com/benc-uk/mockery/releases/download/0.0.1/mockery-linux -O mockery
+wget https://github.com/benc-uk/mockery/releases/download/0.0.2/mockery-linux -O mockery
 chmod +x ./mockery
 ```
 
